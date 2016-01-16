@@ -6,6 +6,7 @@ import (
   "encoding/json"
   "strconv"
   "io/ioutil"
+  "github.com/julienschmidt/httprouter"
 )
 
 type Planet struct {
@@ -105,7 +106,7 @@ func writeJSON(planets []Planet) {
   }
 }
 
-func main() {
+func getPlanets() (Planets, error) {
   url := "http://swapi.co/api/planets"
   data, err := request(url)
 
@@ -114,7 +115,26 @@ func main() {
   }
 
   planets, err := remainingRequests(data, url)
+  if err != nil {
+    return Planets{}, err
+  }
 
-  writeJSON(planets.All())
-  log.Println(planets.All())
+  return planets, nil
+}
+
+func main() {
+  router := httprouter.New()
+
+  router.GET("/planets", func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+    planets, _ := getPlanets()
+
+    w.Header().Set("Content-Type", "application/json; charset=utf-8")
+    json.NewEncoder(w).Encode(planets.All())
+  })
+
+
+  log.Fatal(http.ListenAndServe(":8080", router))
+
+  // planets, _ := getPlanets()
+  // writeJSON(planets.All())
 }
