@@ -6,7 +6,7 @@ import (
   "encoding/json"
   "strconv"
   "io/ioutil"
-  "github.com/julienschmidt/httprouter"
+  // "github.com/julienschmidt/httprouter"
 )
 
 type Planet struct {
@@ -69,8 +69,7 @@ func request(url string) (PlanetJSON, error) {
   return data, nil
 }
 
-func remainingRequests(firstPage PlanetJSON, url string) (Planets, error) {
-  allPlanets := []PlanetJSON{ firstPage, }
+func remainingRequests(firstPage PlanetJSON, url string) (Planets, []error) {
   maxResults := 10
   remainingTotal := firstPage.Count - maxResults
   requests := remainingTotal / maxResults
@@ -79,16 +78,57 @@ func remainingRequests(firstPage PlanetJSON, url string) (Planets, error) {
     requests = requests + 1
   }
 
+  // return remainingRequestsSync(firstPage, requests, url)
+  return remainingRequestsAsync(firstPage, requests, url)
+}
+
+func remainingRequestsAsync(firstPage PlanetJSON, requests int, url string) (Planets, []error) {
+  successes := make(chan PlanetJSON, requests)
+  errors := make(chan error, requests)
+
+  for i := 0; i < requests; i++ {
+    go func(i int) {
+      pagedUrl := url + "?page=" + strconv.Itoa(i + 2)
+      data, err := request(pagedUrl)
+      if err != nil {
+        errors <- err
+      } else {
+        successes <- data
+      }
+    }(i)
+  }
+
+  allPlanets := []PlanetJSON{ firstPage, }
+  allErrors := []error{}
+
+  for i := 0; i < requests; i++ {
+    select {
+    case data := <-successes:
+      log.Println(data)
+      allPlanets = append(allPlanets, data)
+    case err := <-errors:
+      allErrors = append(allErrors, err)
+    }
+  }
+
+  return Planets{ JSON: allPlanets }, allErrors
+}
+
+func remainingRequestsSync(firstPage PlanetJSON, requests int, url string) (Planets, []error) {
+  allPlanets := []PlanetJSON{ firstPage, }
+  errors := []error{}
+
   for i := 0; i < requests; i++ {
     pagedUrl := url + "?page=" + strconv.Itoa(i + 2)
     data, err := request(pagedUrl)
     if err != nil {
-      return Planets{}, err
+      errors = append(errors, err)
+    } else {
+      allPlanets = append(allPlanets, data)
     }
-    allPlanets = append(allPlanets, data)
   }
 
-  return Planets{ JSON: allPlanets }, nil
+  return Planets{ JSON: allPlanets }, errors
 }
 
 func writeJSON(planets []Planet) {
@@ -114,27 +154,27 @@ func getPlanets() (Planets, error) {
     log.Println(err)
   }
 
-  planets, err := remainingRequests(data, url)
-  if err != nil {
-    return Planets{}, err
-  }
+  planets, _ := remainingRequests(data, url)
+  // if err != nil {
+  //   return Planets{}, err
+  // }
 
   return planets, nil
 }
 
 func main() {
-  router := httprouter.New()
+  // router := httprouter.New()
+  //
+  // router.GET("/planets", func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+  //   planets, _ := getPlanets()
+  //
+  //   w.Header().Set("Content-Type", "application/json; charset=utf-8")
+  //   json.NewEncoder(w).Encode(planets.All())
+  // })
+  //
+  //
+  // log.Fatal(http.ListenAndServe(":8080", router))
 
-  router.GET("/planets", func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-    planets, _ := getPlanets()
-
-    w.Header().Set("Content-Type", "application/json; charset=utf-8")
-    json.NewEncoder(w).Encode(planets.All())
-  })
-
-
-  log.Fatal(http.ListenAndServe(":8080", router))
-
-  // planets, _ := getPlanets()
-  // writeJSON(planets.All())
+  planets, _ := getPlanets()
+  writeJSON(planets.All())
 }
