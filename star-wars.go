@@ -7,67 +7,74 @@ import (
   "strconv"
   "io/ioutil"
   // "github.com/julienschmidt/httprouter"
+  "github.com/david-casagrande/star-wars/objects/planets"
 )
 
-type Planet struct {
-  Name string `json:"name"`
-  RotationPeriod string `json:"rotation_period"`
-  OrbitalPeriod string `json:"orbital_period"`
-  Diameter string `json:"diameter"`
-  Climate string `json:"climate"`
-  Gravity string `json:"gravity"`
-  Terrain string `json:"terrain"`
-  SurfaceWater string `json:"surface_water"`
-  Population string `json:"population"`
-      // "residents": [
-      //     "http://swapi.co/api/people/5/",
-      //     "http://swapi.co/api/people/68/",
-      //     "http://swapi.co/api/people/81/"
-      // ],
-      // "films": [
-      //     "http://swapi.co/api/films/6/",
-      //     "http://swapi.co/api/films/1/"
-      // ],
-      // "created": "2014-12-10T11:35:48.479000Z",
-      // "edited": "2014-12-20T20:58:18.420000Z",
-      // "url": "http://swapi.co/api/planets/2/"
-}
+// type Planet struct {
+//   Name string `json:"name"`
+//   RotationPeriod string `json:"rotation_period"`
+//   OrbitalPeriod string `json:"orbital_period"`
+//   Diameter string `json:"diameter"`
+//   Climate string `json:"climate"`
+//   Gravity string `json:"gravity"`
+//   Terrain string `json:"terrain"`
+//   SurfaceWater string `json:"surface_water"`
+//   Population string `json:"population"`
+// }
 
-type PlanetJSON struct {
-  Count int `json:"count"`
-  Next string `json:"next"`
-  Previous string `json:"previous"`
-  Results []Planet `json:"results"`
-}
+// type PlanetJSON struct {
+//   Count int `json:"count"`
+//   Next string `json:"next"`
+//   Previous string `json:"previous"`
+//   Results []Planet `json:"results"`
+// }
 
-type Planets struct {
-  JSON []PlanetJSON
-}
+// type Parser struct {
+//   JSON []Data
+// }
 
-func (p Planets) All() ([]Planet) {
-  planets := []Planet{}
-  for _, planetJSON := range p.JSON {
-    planets = append(planets, planetJSON.Results...)
-  }
+// func (p Parser) All() ([]Data) {
+//   results := []Data{}
+//   for _, j := range p.JSON {
+//     results = append(results, j.Results...)
+//   }
+//
+//   return results
+// }
 
-  return planets
-}
+// func request(url string) (PlanetJSON, error) {
+//   resp, err := http.Get(url)
+//   if err != nil {
+//     return PlanetJSON{}, err
+//   }
+//
+//   defer resp.Body.Close()
+//
+//   var data PlanetJSON
+//   if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+//     return PlanetJSON{}, err
+//   }
+//
+//   return data, nil
+// }
+//
+// type Data interface {
+// }
 
-func request(url string) (PlanetJSON, error) {
-  resp, err := http.Get(url)
-  if err != nil {
-    return PlanetJSON{}, err
-  }
-
-  defer resp.Body.Close()
-
-  var data PlanetJSON
-  if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-    return PlanetJSON{}, err
-  }
-
-  return data, nil
-}
+// func Get(url string, data Data) (Data, error) {
+//   resp, err := http.Get(url)
+//   if err != nil {
+//     return data, err
+//   }
+//
+//   defer resp.Body.Close()
+//
+//   if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+//     return data, err
+//   }
+//
+//   return data, nil
+// }
 
 func remainingRequests(firstPage PlanetJSON, url string) (Planets, []error) {
   maxResults := 10
@@ -146,23 +153,26 @@ func writeJSON(planets []Planet) {
   }
 }
 
-func getPlanets() (Planets, error) {
+func getPlanets() (Parser, error) {
   url := "http://swapi.co/api/planets"
-  data, err := request(url)
+  data, err := Get(url, &PlanetJSON{})//request(url)
 
   if err != nil {
     log.Println(err)
   }
 
-  planets, _ := remainingRequests(data, url)
+  return Parser{ JSON: data, }
+
+  // planets, _ := remainingRequests(data, url)
   // if err != nil {
   //   return Planets{}, err
   // }
 
-  return planets, nil
+  // return planets, nil
 }
 
 func main() {
+  planets.All()
   // router := httprouter.New()
   //
   // router.GET("/planets", func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -175,6 +185,6 @@ func main() {
   //
   // log.Fatal(http.ListenAndServe(":8080", router))
 
-  planets, _ := getPlanets()
-  writeJSON(planets.All())
+  // planets, _ := getPlanets()
+  // writeJSON(planets.All())
 }
