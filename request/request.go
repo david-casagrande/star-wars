@@ -74,19 +74,3 @@ func All(url string, requests int, fn callback) {
     Get(pagedUrl, fn)
   }
 }
-
-func RemainingRequests(total int) (int) {
-  maxResults := 10
-  if(total <= maxResults) {
-    return 0
-  }
-
-  remainingTotal := total - maxResults
-  requests := remainingTotal / maxResults
-
-  if (remainingTotal % requests) > 0 {
-    requests = requests + 1
-  }
-
-  return requests
-}

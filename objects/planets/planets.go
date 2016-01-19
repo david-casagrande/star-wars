@@ -2,6 +2,7 @@ package Planets
 
 import (
   "github.com/david-casagrande/star-wars/request"
+  "github.com/david-casagrande/star-wars/utils"
   "net/http"
   "encoding/json"
 )
@@ -38,7 +39,7 @@ func (p *Planets) populate() () {
     return
   }
 
-  remainingRequests := Request.RemainingRequests(p.JSON[0].Count)
+  remainingRequests := Utils.RemainingRequests(p.JSON[0].Count, len(p.JSON[0].Results))
   Request.All(url, remainingRequests, p.callback)
 }
 

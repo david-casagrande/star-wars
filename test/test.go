@@ -18,6 +18,11 @@ func main() {
     return
   }
 
-  Utils.WriteJSON("planets", data)
+  writeErr := Utils.WriteJSON("planets", data)
+  if writeErr != nil {
+    log.Println(writeErr)
+    return
+  }
+
   log.Println("finished")
 }
