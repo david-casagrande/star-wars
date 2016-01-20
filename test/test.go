@@ -6,7 +6,6 @@ import (
   "github.com/david-casagrande/star-wars/objects/planets"
   "github.com/david-casagrande/star-wars/objects/people"
   "github.com/david-casagrande/star-wars/utils"
-
 )
 
 func planets() {
@@ -43,7 +42,7 @@ func people() {
 
 func main() {
   log.Println("started")
-  // planets()
+  planets()
   people()
   log.Println("finished")
 }
