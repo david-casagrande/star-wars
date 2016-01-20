@@ -47,7 +47,6 @@ func (p *People) callback(resp *http.Response) () {
   data := PersonJSON{}
   if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
     log.Println(err)
-
     return
   }
 

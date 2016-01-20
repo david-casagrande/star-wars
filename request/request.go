@@ -59,19 +59,28 @@ func Get(url string, fn callback) (error) {
 
   defer resp.Body.Close()
 
-  // if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-  //   return err
-  // }
-
   fn(resp)
 
   return nil
 }
 
 func All(url string, requests int, fn callback) {
+  errors := make(chan error)
+
   for i := 0; i < requests; i++ {
-    pagedUrl := url + "?page=" + strconv.Itoa(i + 2)
-    log.Println(pagedUrl)
-    Get(pagedUrl, fn)
+    go func(i int) {
+      pagedUrl := url + "?page=" + strconv.Itoa(i + 2)
+      log.Println(pagedUrl)
+      errors <- Get(pagedUrl, fn)
+    }(i)
+  }
+
+  for i := 0; i < requests; i++ {
+    select {
+    case err := <-errors:
+      if err != nil {
+        log.Println(err)
+      }
+    }
   }
 }
