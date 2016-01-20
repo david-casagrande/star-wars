@@ -31,16 +31,14 @@ type Planets struct {
   Errors []error
 }
 
-func (p *Planets) populate() () {
-  url := "http://swapi.co/api/planets"
-  err := Request.Get(url, p.callback)
+func(p *Planets) all() ([]Planet) {
+  results := []Planet{}
 
-  if err != nil {
-    return
+  for _, planet := range p.JSON {
+    results = append(results, planet.Results...)
   }
 
-  remainingRequests := Utils.RemainingRequests(p.JSON[0].Count, len(p.JSON[0].Results))
-  Request.All(url, remainingRequests, p.callback)
+  return results
 }
 
 func (p *Planets) callback(resp *http.Response) () {
@@ -51,14 +49,16 @@ func (p *Planets) callback(resp *http.Response) () {
   p.JSON = append(p.JSON, data)
 }
 
-func(p *Planets) all() ([]Planet) {
-  results := []Planet{}
+func (p *Planets) populate() () {
+  url := "http://swapi.co/api/planets"
+  err := Request.Get(url, p.callback)
 
-  for _, planet := range p.JSON {
-    results = append(results, planet.Results...)
+  if err != nil {
+    return
   }
 
-  return results
+  remainingRequests := Utils.RemainingRequests(p.JSON[0].Count, len(p.JSON[0].Results))
+  Request.All(url, remainingRequests, p.callback)
 }
 
 func All() ([]Planet, error) {

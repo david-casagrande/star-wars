@@ -2,6 +2,8 @@ package Utils
 
 import (
   "io/ioutil"
+  "log"
+  "math"
 )
 
 func WriteJSON(name string, data []byte) (error) {
@@ -20,11 +22,10 @@ func RemainingRequests(total int, resultsPerRequest int) (int) {
   }
 
   remainingTotal := total - resultsPerRequest
-  requests := remainingTotal / resultsPerRequest
+  roundedRequests := math.Ceil(float64(remainingTotal) / float64(resultsPerRequest))
+  requests := int(roundedRequests)
+  
+  log.Println(requests)
 
-  if (remainingTotal % requests) > 0 {
-    requests = requests + 1
-  }
-
-  return requests
+  return int(requests)
 }

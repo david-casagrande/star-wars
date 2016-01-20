@@ -3,7 +3,7 @@ package Request
 import (
   "net/http"
   // "encoding/json"
-  // "log"
+  "log"
   "strconv"
 )
 
@@ -71,6 +71,7 @@ func Get(url string, fn callback) (error) {
 func All(url string, requests int, fn callback) {
   for i := 0; i < requests; i++ {
     pagedUrl := url + "?page=" + strconv.Itoa(i + 2)
+    log.Println(pagedUrl)
     Get(pagedUrl, fn)
   }
 }
