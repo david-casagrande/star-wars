@@ -2,7 +2,6 @@ package Request
 
 import (
   "net/http"
-  // "encoding/json"
   "log"
   "strconv"
 )
@@ -11,45 +10,6 @@ type Data interface {
 }
 
 type callback func(*http.Response) ()
-
-// type Data struct {
-//   Count int `json:"count"`
-//   Next string `json:"next"`
-//   Previous string `json:"previous"`
-//   Results []interface{} `json:"results"`
-// }
-
-// func paginatedAsync(requests int, url string, data Data) ([]Data, []error) {
-//   successes := make(chan Data, requests)
-//   errors := make(chan error, requests)
-//
-//   for i := 0; i < requests; i++ {
-//     go func(i int) {
-//       pagedUrl := url + "?page=" + strconv.Itoa(i + 2)
-//       d, err := Get(pagedUrl, &data)
-//       if err != nil {
-//         errors <- err
-//       } else {
-//         successes <- d
-//       }
-//     }(i)
-//   }
-//
-//   allData := []Data{}
-//   allErrors := []error{}
-//
-//   for i := 0; i < requests; i++ {
-//     select {
-//     case data := <-successes:
-//       allData = append(allData, data)
-//     case err := <-errors:
-//       allErrors = append(allErrors, err)
-//     }
-//   }
-//
-//   return allData, allErrors
-//   // return Planets{ JSON: allPlanets }, allErrors
-// }
 
 func Get(url string, fn callback) (error) {
   resp, err := http.Get(url)
